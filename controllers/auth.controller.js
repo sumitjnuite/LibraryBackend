@@ -1,4 +1,7 @@
 import db from '../db/index.js'; // Import the database connection
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // registerUser function to handle user registration
 export const registerUser = async (req, res) => {
@@ -23,22 +26,33 @@ export const registerUser = async (req, res) => {
     }
 }
 
-// registerUser function to handle user registration
+// loginUser function to handle user login
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        const [result] = await db.query(
+        const [result] = await db.execute(
             'SELECT * from users where email = ? and password = ?',
             [email, password]
         );
 
-        if(result.length === 0) {
+        if (result.length === 0) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        console.log(result);
-        // (later) create JWT token and send it in response
-        res.status(201).json({token:'library-token', message:'USER Login SUCCESSFULLY' });
+        // generate JWT token
+        const token = jwt.sign(
+            { id: result[0].id, email: result[0].email },
+            process.env.JWT_SECRET
+        );
+
+        // send user details and token in response
+        res.status(201).json({
+            token,
+            name: result[0].name,
+            email: result[0].email,
+            phone: result[0].phone,
+            message: 'USER Login SUCCESSFULLY'
+        });
 
     }
     catch (error) {

@@ -3,8 +3,9 @@ import express from 'express';
 // import mysql from 'mysql2/promise';
 // import bcrypt from 'bcrypt';
 // import jwt from 'jsonwebtoken';
-import cors from 'cors';
 import authRouter from './routes/auth.router.js';
+import {authMiddleware} from './middlewares/auth.middleware.js';
+import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -24,6 +25,11 @@ app.get('/test', (req, res) => {
 // Routes
 app.use('/api/auth', authRouter);
 
+// protected routes
+app.use('/api/book-seats', authMiddleware, (req, res) => {
+  console.log(req.user)
+  res.send('This is a protected route for booking seats');
+});
 
 
 
@@ -39,23 +45,7 @@ export default app;
 // await connection.execute(`CREATE DATABASE IF NOT EXISTS library_management`);
 // await connection.query('USE library_management');
 
-// JWT middleware
-// const authenticateToken = (req, res, next) => {
-//   const authHeader = req.headers['authorization'];
-//   const token = authHeader && authHeader.split(' ')[1];
 
-//   if (!token) {
-//     return res.status(401).json({ message: 'Access token required' });
-//   }
-
-//   jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
-//     if (err) {
-//       return res.status(403).json({ message: 'Invalid token' });
-//     }
-//     req.user = user;
-//     next();
-//   });
-// };
 
 // // Admin middleware
 // const requireAdmin = (req, res, next) => {
